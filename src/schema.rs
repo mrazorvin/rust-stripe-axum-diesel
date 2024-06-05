@@ -3,12 +3,18 @@
 diesel::table! {
     charge (id) {
         id -> Integer,
+        amount -> Float,
+        created -> Integer,
+        payment_id -> Integer,
     }
 }
 
 diesel::table! {
     customers (id) {
         id -> Integer,
+        name -> Text,
+        email -> Text,
+        description -> Text,
     }
 }
 
@@ -18,9 +24,12 @@ diesel::table! {
         created -> Integer,
         amount -> Integer,
         currency -> Text,
-        method_type -> Text,
         status -> Text,
+        method_type -> Text,
+        customer_id -> Integer,
     }
 }
 
+diesel::joinable!(charge -> payments (payment_id));
+diesel::joinable!(payments -> customers (customer_id));
 diesel::allow_tables_to_appear_in_same_query!(charge, customers, payments,);

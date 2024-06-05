@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, sync::Arc};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-pub mod db;
+mod connect_db;
 pub mod schema;
 mod stripe;
 
@@ -16,6 +16,8 @@ pub struct KeysStorage {
     api_key: Arc<String>,
     ws_key: Arc<String>,
 }
+
+pub(crate) use connect_db::*;
 
 #[tokio::main]
 async fn main() {
@@ -36,7 +38,7 @@ async fn main() {
     let app = Router::new()
         .route("/payment", put(crate::stripe::create_payment))
         .route("/payment/:id", get(placeholder_handler))
-        .route("/payment/:id/charge", post(placeholder_handler))
+        .route("/payment/:id/confirm", post(placeholder_handler))
         // TODO request authorization
         .route("/customer/:id/balance", get(placeholder_handler))
         // https://github.com/arlyon/async-stripe/blob/master/examples/webhook-axum.rs
