@@ -12,7 +12,7 @@ CREATE TABLE payments (
   created INTEGER NOT NULL, 
   amount INTEGER NOT NULL,
   currency TEXT NOT NULL CHECK(currency IN ('usd')), -- move to external table 
-  "status" TEXT NOT NULL CHECK("status" IN ('wait', 'done', 'canceled')),
+  "status" TEXT NOT NULL CHECK("status" IN ('wait_confirmation', 'confirmed', 'canceled')),
   method_type TEXT NOT NULL CHECK(method_type IN ('card')),
   customer_id INTEGER NOT NULL REFERENCES customers
 );

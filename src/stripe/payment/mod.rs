@@ -1,14 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+mod confirm_payment;
 mod create_payment;
 mod get_payment;
 mod model;
 
-pub(crate) use create_payment::*;
-pub(crate) use get_payment::*;
-pub(crate) use model::*;
+pub use confirm_payment::*;
+pub use create_payment::*;
+pub use get_payment::*;
+pub use model::*;
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct PaymentPathSegment {
+pub struct PaymentPathSegment {
     id: i32,
 }

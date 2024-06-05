@@ -18,7 +18,7 @@ pub struct KeysStorage {
     ws_key: Arc<String>,
 }
 
-pub(crate) use connect_db::*;
+pub use connect_db::*;
 
 #[tokio::main]
 async fn main() {
@@ -35,13 +35,12 @@ async fn main() {
 
     // custotomer -> payment intent -> charge -> find all charges
 
-    // build our application with a route
+    // TODO request authorization
     let app = Router::new()
         .route("/payment", put(crate::stripe::create_payment))
         .route("/payment/:id", get(crate::stripe::get_payment))
-        .route("/payment/:id/confirm", post(placeholder_handler))
-        // TODO request authorization
-        .route("/customer/:id/balance", get(placeholder_handler))
+        .route("/payment/:id/confirm", post(crate::stripe::confirm_payment))
+        .route("/customer/:id/balance", get(crate::stripe::get_balance))
         // https://github.com/arlyon/async-stripe/blob/master/examples/webhook-axum.rs
         .route("/webhooks/stripe", post(crate::stripe::handle_webhooks))
         .with_state(KeysStorage { api_key: Arc::new(api_key), ws_key: Arc::new(ws_key) });

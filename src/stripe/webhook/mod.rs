@@ -10,7 +10,7 @@ use stripe::{Event, EventObject, EventType};
 
 // https://github.com/arlyon/async-stripe/blob/master/examples/webhook-axum.rs
 
-pub(crate) struct StripeEvent(Event);
+pub struct StripeEvent(Event);
 
 #[async_trait]
 impl<S> FromRequest<S> for StripeEvent
@@ -39,7 +39,7 @@ where
     }
 }
 
-pub(crate) async fn handle_webhooks(StripeEvent(event): StripeEvent) {
+pub async fn handle_webhooks(StripeEvent(event): StripeEvent) {
     match event.type_ {
         EventType::PaymentIntentSucceeded => {
             if let EventObject::PaymentIntent(session) = event.data.object {

@@ -12,12 +12,10 @@ use crate::schema;
 // https://github.com/arlyon/async-stripe/blob/master/examples/payment-intent.rs
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct PaymentIntentParams {
+pub struct PaymentIntentParams {
     currency: Currency,
     amount: i64,
 }
-
-// TODO client, charge, methods
 
 pub async fn create_payment(
     State(storage): State<crate::KeysStorage>,
@@ -44,7 +42,7 @@ pub async fn create_payment(
                     created.eq(intent.created as i32),
                     amount.eq(intent.amount as i32),
                     currency.eq("usd"),
-                    status.eq("wait"),
+                    status.eq("wait_confirmation"),
                     method_type.eq("card"),
                     customer_id.eq(0),
                 ))

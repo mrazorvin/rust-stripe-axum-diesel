@@ -3,10 +3,8 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
 use crate::stripe::Payment;
 
-use super::PaymentPathSegment;
-
-pub(crate) async fn get_payment(
-    Path(path): Path<PaymentPathSegment>,
+pub async fn get_payment(
+    Path(path): Path<super::PaymentPathSegment>,
 ) -> Result<Json<crate::stripe::Payment>, (StatusCode, String)> {
     use crate::schema::payments::dsl::*;
 
