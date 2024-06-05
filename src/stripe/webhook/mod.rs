@@ -1,7 +1,8 @@
+use crate::KeysStorage;
 use axum::{
     async_trait,
     body::Body,
-    extract::{FromRequest, Request},
+    extract::{FromRef, FromRequest, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
@@ -15,6 +16,7 @@ pub(crate) struct StripeEvent(Event);
 impl<S> FromRequest<S> for StripeEvent
 where
     String: FromRequest<S>,
+    KeysStorage: FromRef<S>,
     S: Send + Sync,
 {
     type Rejection = Response;
@@ -26,26 +28,25 @@ where
             return Err(StatusCode::BAD_REQUEST.into_response());
         };
 
+        let ws_key = &*KeysStorage::from_ref(state).ws_key;
         let payload =
             String::from_request(req, state).await.map_err(IntoResponse::into_response)?;
 
         Ok(Self(
-            stripe::Webhook::construct_event(&payload, signature.to_str().unwrap(), "whsec_xxxxx")
+            stripe::Webhook::construct_event(&payload, signature.to_str().unwrap(), ws_key)
                 .map_err(|_| StatusCode::BAD_REQUEST.into_response())?,
         ))
     }
 }
 
-pub(crate) async fn handle_webhook(StripeEvent(event): StripeEvent) {
+pub(crate) async fn handle_webhooks(StripeEvent(event): StripeEvent) {
     match event.type_ {
-        EventType::CheckoutSessionCompleted => {
-            if let EventObject::CheckoutSession(session) = event.data.object {
-                println!("Received checkout session completed webhook with id: {:?}", session.id);
-            }
-        }
-        EventType::AccountUpdated => {
-            if let EventObject::Account(account) = event.data.object {
-                println!("Received account updated webhook for account: {:?}", account.id);
+        EventType::PaymentIntentSucceeded => {
+            if let EventObject::PaymentIntent(session) = event.data.object {
+                tracing::debug!(
+                    "Payment intent succeeded {:?}",
+                    serde_json::to_writer_pretty(std::io::stdout(), &session)
+                );
             }
         }
         _ => println!("Unknown event encountered in webhook: {:?}", event.type_),
