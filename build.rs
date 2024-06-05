@@ -12,5 +12,6 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let mut harness = HarnessWithOutput::write_to_stdout(&mut connection);
     MigrationHarness::run_pending_migrations(&mut harness, MIGRATIONS)?;
 
+    println!("cargo:rerun-if-changed=migrations");
     Ok(())
 }

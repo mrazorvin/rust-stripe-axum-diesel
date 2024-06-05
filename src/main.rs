@@ -1,8 +1,14 @@
-use axum::{routing::post, Router};
+use axum::{
+    extract::Path,
+    routing::{get, post, put},
+    Router,
+};
+use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, sync::Arc};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod db;
+pub mod db;
+pub mod schema;
 mod stripe;
 
 #[derive(Clone)]
@@ -28,10 +34,13 @@ async fn main() {
 
     // build our application with a route
     let app = Router::new()
-        // `GET /` goes to `root`
-        .route("/create_payment_intent", post(crate::stripe::create_payment_intent))
+        .route("/payment", put(crate::stripe::create_payment))
+        .route("/payment/:id", get(placeholder_handler))
+        .route("/payment/:id/charge", post(placeholder_handler))
+        // TODO request authorization
+        .route("/customer/:id/balance", get(placeholder_handler))
         // https://github.com/arlyon/async-stripe/blob/master/examples/webhook-axum.rs
-        .route("/stripe_webhooks", post(crate::stripe::handle_webhooks))
+        .route("/webhooks/stripe", post(crate::stripe::handle_webhooks))
         .with_state(KeysStorage { api_key: Arc::new(api_key), ws_key: Arc::new(ws_key) });
 
     // run our app with hyper, listening globally on port 3000
@@ -40,4 +49,13 @@ async fn main() {
 
     tracing::debug!("listening on {addr}");
     axum::serve(listener, app).await.unwrap();
+}
+
+#[derive(Serialize, Deserialize)]
+struct IdPath {
+    id: i64,
+}
+
+async fn placeholder_handler(Path(path): Path<IdPath>) -> String {
+    format!("placeholder router {}", path.id)
 }
