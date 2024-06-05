@@ -19,7 +19,7 @@ CREATE TABLE payments (
 
 CREATE TABLE charge (
   id INTEGER NOT NULL PRIMARY KEY,
-  amount REAL NOT NULL,
+  amount INTEGER NOT NULL,
   created INTEGER NOT NULL,
   payment_id INTEGER NOT NULL REFERENCES payments
 );

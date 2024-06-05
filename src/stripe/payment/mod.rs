@@ -9,6 +9,6 @@ pub(crate) use get_payment::*;
 pub(crate) use model::*;
 
 #[derive(Serialize, Deserialize)]
-struct PaymentPathSegment {
-    id: i64,
+pub(crate) struct PaymentPathSegment {
+    id: i32,
 }

@@ -4,6 +4,8 @@ use diesel::prelude::*;
 #[diesel(table_name = crate::schema::customers)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub(crate) struct Customer {
-    #[allow(unused)]
     id: i32,
+    name: String,
+    email: String,
+    description: String
 }

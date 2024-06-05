@@ -3,7 +3,7 @@
 diesel::table! {
     charge (id) {
         id -> Integer,
-        amount -> Float,
+        amount -> Integer,
         created -> Integer,
         payment_id -> Integer,
     }
