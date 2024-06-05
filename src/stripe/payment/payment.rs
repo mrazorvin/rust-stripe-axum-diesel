@@ -2,6 +2,8 @@ use axum::{http::StatusCode, response::Json};
 use serde::{Deserialize, Serialize};
 use stripe::{CreatePaymentIntent, Currency, PaymentIntent};
 
+// https://github.com/arlyon/async-stripe/blob/master/examples/payment-intent.rs
+
 #[derive(Serialize, Deserialize)]
 pub(crate) struct PaymentIntentParams {
     api_key: String,

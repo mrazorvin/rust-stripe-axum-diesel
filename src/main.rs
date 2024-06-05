@@ -6,7 +6,7 @@ use axum::{
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod payment;
+mod stripe;
 
 #[tokio::main]
 async fn main() {
@@ -16,7 +16,9 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
-        .route("/create_payment_intent", post(payment::create_payment_intent));
+        .route("/create_payment_intent", post(crate::stripe::create_payment_intent))
+        // https://github.com/arlyon/async-stripe/blob/master/examples/webhook-axum.rs
+        .route("/stripe_webhooks", post(crate::stripe::handle_webhook));
 
     // run our app with hyper, listening globally on port 3000
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
