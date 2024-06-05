@@ -1,11 +1,8 @@
-use std::{env, net::SocketAddr};
-
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use axum::{routing::post, Router};
+use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod connect;
 mod stripe;
 
 #[tokio::main]
