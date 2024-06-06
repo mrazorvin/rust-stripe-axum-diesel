@@ -1,9 +1,7 @@
 use axum::{
-    extract::Path,
     routing::{get, post, put},
     Router,
 };
-use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, sync::Arc};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -51,13 +49,4 @@ async fn main() {
 
     tracing::debug!("listening on {addr}");
     axum::serve(listener, app).await.unwrap();
-}
-
-#[derive(Serialize, Deserialize)]
-struct IdPath {
-    id: i64,
-}
-
-async fn placeholder_handler(Path(path): Path<IdPath>) -> String {
-    format!("placeholder router {}", path.id)
 }

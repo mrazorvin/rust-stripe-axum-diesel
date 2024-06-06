@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{extract::State, http::StatusCode, response::Json};
 use diesel::{insert_into, ExpressionMethods, RunQueryDsl};
 use serde::{Deserialize, Serialize};

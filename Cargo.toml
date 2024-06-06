@@ -8,7 +8,7 @@ rusqlite = { version = "0.31.0", features = ["bundled"] }
 diesel = { version = "2.2.0", features = ["sqlite"] }
 tracing-subscriber = { version = "0.3" }
 tokio = { version = "1.38.0", features = ["full"] }
-async-stripe = { version = "0.37.1", features = ["runtime-tokio-hyper"] }
+async-stripe = { version = "=0.37.0", features = ["runtime-tokio-hyper"] }
 serde = { version = "1.0.203", features = ["derive"] }
 tracing = "0.1.40"
 axum = "0.7.5"

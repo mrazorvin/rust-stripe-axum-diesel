@@ -1,6 +1,7 @@
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::customers)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Customer {

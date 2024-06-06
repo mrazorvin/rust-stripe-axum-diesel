@@ -1,15 +1,66 @@
+use std::str::FromStr;
+
 use axum::{extract::Path, http::StatusCode, Json};
+use diesel::{
+    expression::{is_aggregate, ValidGrouping},
+    prelude::*,
+};
 use serde::{Deserialize, Serialize};
+
+use crate::schema;
 
 #[derive(Serialize, Deserialize)]
 pub struct BalanceInfo {
-    customer_id: i32,
-    balance: i32,
+    customer: String,
     currency: stripe::Currency,
+    balance: Option<i64>,
+}
+
+impl ValidGrouping<(schema::customers::name, schema::payments::currency)>
+    for schema::customers::name
+{
+    type IsAggregate = is_aggregate::Yes;
+}
+
+impl ValidGrouping<(schema::customers::name, schema::payments::currency)>
+    for schema::payments::currency
+{
+    type IsAggregate = is_aggregate::Yes;
 }
 
 pub async fn get_balance(
     Path(path): Path<super::UserPathSegment>,
-) -> Result<Json<BalanceInfo>, (StatusCode, String)> {
-    Ok(Json(BalanceInfo { customer_id: path.id, balance: 0, currency: stripe::Currency::USD }))
+) -> Result<Json<Vec<BalanceInfo>>, (StatusCode, String)> {
+    // GROUP BY from multi tables not fully supported, check https://github.com/diesel-rs/diesel/issues/2544 for workaround
+    let query: Result<Vec<(String, String, Option<i64>)>, diesel::result::Error> =
+        schema::customers::table
+            .inner_join(schema::payments::table.inner_join(schema::charge::table))
+            .group_by((schema::customers::name, schema::payments::currency))
+            .select((
+                schema::customers::name,
+                schema::payments::currency,
+                diesel::dsl::sum(schema::charge::amount),
+            ))
+            .load(&mut crate::db());
+
+    match query {
+        Ok(balances) => {
+            return Ok(Json(
+                balances
+                    .into_iter()
+                    .map(|(customer, currency, balance)| BalanceInfo {
+                        customer,
+                        balance,
+                        currency: stripe::Currency::from_str(&currency).unwrap(),
+                    })
+                    .collect(),
+            ))
+        }
+        Err(error) => {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                format!("can't fetch customer balance {}", error.to_string()),
+            ))
+        }
+    }
 }
