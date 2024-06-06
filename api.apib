@@ -1,0 +1,53 @@
+FORMAT: 1A
+HOST: http://localhost:3000
+
+# Payments & Balance
+## Payment [/payment]
+### Initiate payment [PUT /payment]
++ Request (application/json)
+    + Attributes (object, fixed-type)
+        + amount (number, required)
+        + currency (Currency, required)
++ Response 200 (application/json)
+    + Attributes (Payment, fixed-type)
+    
+### Get payment [GET /payment/{id}]
++ Parameters
+    + id: 1 (number, required) - Payment id
++ Response 200 (application/json)
+    + Attributes (Payment, fixed-type)
+    
+### Confirm payment [POST /payment/{id}]
++ Parameters
+    + id: 1 (number, required) - Payment id
++ Response 200 (application/json)
+    + Attributes (Payment, fixed-type)
+
+## Customer [/customer]
+### Get customer balance [GET /customer/{id}/balance]
++ Parameters
+    + id: 0 (number, required) - Customer identificator
++ Response 200 (application/json)
+    + Attributes (Balance, fixed-type)
+    
+## Data structures
+## Payment (object, fixed-type)
++ id (number, required)
++ created (number, required)
++ amount (number, required)
++ currency (Currency, required)
++ status (enum[string])
+    - wait_confirmation
+    - confirmed
+    - canceled
++ customer_id (number, required)
++ method_type (enum[string])
+    - card
+    
+## Balance (object, fixed-type)
++ customer (string, required) 
++ amount (number, required)
++ currency (Currency, required)
+    
+## Currency (enum[string])
+- usd
