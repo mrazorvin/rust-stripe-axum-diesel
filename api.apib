@@ -2,6 +2,12 @@ FORMAT: 1A
 HOST: http://localhost:3000
 
 # Payments & Balance
+The payment flow consists of two steps:
+1. Initiate Payment: The customer initiates the payment through the service.
+2. Confirm Payment: Payment confirmation can occur in two ways:
+    - Automatically via Stripe Webhook: Stripe sends a webhook to confirm the payment.
+    - Manually via Confirm Payment Endpoint: The payment is confirmed manually using the confirm payment endpoint.
+
 ## Payment [/payment]
 ### Initiate payment [PUT /payment]
 + Request (application/json)
@@ -17,7 +23,7 @@ HOST: http://localhost:3000
 + Response 200 (application/json)
     + Attributes (Payment, fixed-type)
     
-### Confirm payment [POST /payment/{id}]
+### Manully confirm payment [POST /payment/{id}]
 + Parameters
     + id: 1 (number, required) - Payment id
 + Response 200 (application/json)
@@ -26,27 +32,27 @@ HOST: http://localhost:3000
 ## Customer [/customer]
 ### Get customer balance [GET /customer/{id}/balance]
 + Parameters
-    + id: 0 (number, required) - Customer identificator
+    + id: 0 (number, required) - customer id, use 0 to get `Testing User` balance
 + Response 200 (application/json)
     + Attributes (Balance, fixed-type)
     
 ## Data structures
 ## Payment (object, fixed-type)
-+ id (number, required)
-+ created (number, required)
-+ amount (number, required)
-+ currency (Currency, required)
-+ status (enum[string])
++ id (number, required) - unique identifier
++ created (number, required) - Time at which the object was created (taken from `stripe` response). Measured in seconds
++ amount (number, required) - amount in smallest currency unit (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency).
++ currency (Currency, required) - three-letter ISO currency code, in lowercase. Must be a supported currency.
++ status (enum[string]) - status of this payment, when payment fully fullfiled, status will be changed toconfirmed
     - wait_confirmation
     - confirmed
     - canceled
 + customer_id (number, required)
-+ method_type (enum[string])
++ method_type (enum[string]) - Payment method type
     - card
     
 ## Balance (object, fixed-type)
-+ amount (number, required)
-+ currency (Currency, required)
++ amount (number, required) - amount in smallest currency unit (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). 
++ currency (Currency, required) - three-letter ISO currency code, in lowercase. Must be a supported currency.
     
 ## Currency (enum[string])
 - usd
