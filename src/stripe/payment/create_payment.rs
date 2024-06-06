@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use axum::{extract::State, http::StatusCode, response::Json};
 use diesel::{insert_into, ExpressionMethods, RunQueryDsl};
 use serde::{Deserialize, Serialize};
@@ -5,7 +7,7 @@ use stripe::{
     CreatePaymentIntent, CreatePaymentIntentAutomaticPaymentMethods, Currency, PaymentIntent,
 };
 
-use crate::schema;
+use crate::{schema, stripe::Payment};
 
 // https://github.com/arlyon/async-stripe/blob/master/examples/payment-intent.rs
 
@@ -18,7 +20,7 @@ pub struct PaymentIntentParams {
 pub async fn create_payment(
     State(storage): State<crate::KeysStorage>,
     Json(payload): Json<PaymentIntentParams>,
-) -> Result<Json<PaymentIntent>, (StatusCode, String)> {
+) -> Result<Json<Payment>, (StatusCode, String)> {
     use schema::payments::dsl::*;
 
     let client = stripe::Client::new(&*storage.api_key);
@@ -35,19 +37,32 @@ pub async fn create_payment(
 
     match payment_intent {
         Ok(intent) => {
+            let mut new_payment: Payment = Payment {
+                id: 0,
+                amount: intent.amount as i32,
+                created: intent.created as i32,
+                currency: intent.currency.to_string(),
+                status: String::from("wait_confirmation"),
+                customer_id: 0,
+                method_type: String::from("card"),
+            };
+
             let insert_result = insert_into(payments)
                 .values((
-                    created.eq(intent.created as i32),
-                    amount.eq(intent.amount as i32),
-                    currency.eq("usd"),
-                    status.eq("wait_confirmation"),
-                    method_type.eq("card"),
-                    customer_id.eq(0),
+                    created.eq(new_payment.created),
+                    amount.eq(new_payment.amount),
+                    currency.eq(new_payment.currency.to_string()),
+                    status.eq(&new_payment.status),
+                    method_type.eq(&new_payment.method_type),
+                    customer_id.eq(new_payment.customer_id),
                 ))
                 .execute(&mut crate::db());
 
             match insert_result {
-                Ok(_) => Ok(Json(intent)),
+                Ok(new_payment_id) => {
+                    new_payment.id = new_payment_id as i32;
+                    Ok(Json(new_payment))
+                }
                 Err(error) => Err((StatusCode::BAD_REQUEST, error.to_string())),
             }
         }
